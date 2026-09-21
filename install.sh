@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# neofire Core System – Installation auf einem Webserver ohne Docker (PHP, MySQL/MariaDB).
-# Aufruf im leeren Web-Verzeichnis:
-#   curl -fsSL https://raw.githubusercontent.com/neofire-core-system/neofire-core-system/main/install.sh -o /tmp/neofire-install.sh && bash /tmp/neofire-install.sh
 set -euo pipefail
 
 ZIP_URL="${NEOFIRE_ZIP_URL:-https://www.neofire.de/downloads/neofire-core-1.0.0.0.zip}"
@@ -25,8 +22,6 @@ ask() {
     export "$var=$value"
 }
 
-# Manche Hoster laden Erweiterungen wie den ionCube Loader doppelt und PHP meldet das bei jedem Start.
-# Diese Meldung ist harmlos und wird hier ausgeblendet.
 quiet_php() { grep -v -i "ionCube PHP Loader" || true; }
 
 for tool in php curl unzip; do

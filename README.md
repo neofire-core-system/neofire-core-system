@@ -9,7 +9,7 @@ ghcr.io/neofire-core-system/core:1
 ## Schnellstart
 
 ```bash
-cp .env.example .env    # Werte eintragen
+cp .env.example .env
 docker compose up -d
 ```
 
