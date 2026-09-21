@@ -1,0 +1,64 @@
+name: Build image
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "30 3 * * *"
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/core
+  NEOFIRE_ZIP_URL: https://www.neofire.de/downloads/neofire-core-1.0.0.0.zip
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read package version
+        id: pkg
+        run: |
+          curl -fsSL "$NEOFIRE_ZIP_URL?build=$(date +%s)" -o neofire.zip
+          version=$(unzip -p neofire.zip VERSION | tr -d '[:space:]')
+          checksum=$(sha1sum neofire.zip | cut -c1-12)
+          major=${version%%.*}
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "major=$major" >> "$GITHUB_OUTPUT"
+          echo "build=$version-$checksum" >> "$GITHUB_OUTPUT"
+          rm neofire.zip
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          build-args: |
+            NEOFIRE_ZIP_URL=${{ env.NEOFIRE_ZIP_URL }}?build=${{ steps.pkg.outputs.build }}
+            NEOFIRE_BUILD=${{ steps.pkg.outputs.build }}
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ steps.pkg.outputs.major }}
+            ${{ env.IMAGE }}:${{ steps.pkg.outputs.version }}
+          labels: |
+            org.opencontainers.image.title=neofire Core
+            org.opencontainers.image.description=Shop system with storefront, bookings, rentals and subscriptions
+            org.opencontainers.image.vendor=neofire
+            org.opencontainers.image.url=https://www.neofire.de
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.pkg.outputs.version }}
+            org.opencontainers.image.licenses=proprietary
