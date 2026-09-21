@@ -27,7 +27,6 @@ RUN set -eux; \
 COPY docker/php.ini /usr/local/etc/php/conf.d/neofire.ini
 COPY docker/apache-neofire.conf /etc/apache2/conf-enabled/neofire.conf
 COPY docker/entrypoint.sh /usr/local/bin/neofire-entrypoint
-COPY docker/cron.php /usr/local/lib/neofire/cron.php
 
 RUN chmod +x /usr/local/bin/neofire-entrypoint
 
