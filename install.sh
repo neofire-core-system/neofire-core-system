@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 # neofire Core System – Installation auf einem Webserver ohne Docker (PHP, MySQL/MariaDB).
 # Aufruf im leeren Web-Verzeichnis:
-#   bash <(curl -fsSL https://raw.githubusercontent.com/neofire-core-system/neofire-core-system/main/install.sh)
+#   curl -fsSL https://raw.githubusercontent.com/neofire-core-system/neofire-core-system/main/install.sh -o /tmp/neofire-install.sh && bash /tmp/neofire-install.sh
 set -euo pipefail
 
 ZIP_URL="${NEOFIRE_ZIP_URL:-https://www.neofire.de/downloads/neofire-core-1.0.0.0.zip}"
 TARGET="${NEOFIRE_TARGET:-$(pwd)}"
+
+TTY=/dev/tty
+if ! { : < "$TTY"; } 2> /dev/null; then TTY=/dev/stdin; fi
 
 say()  { printf '\n  %s\n' "$*"; }
 fail() { printf '\n  Fehler: %s\n\n' "$*" >&2; exit 1; }
@@ -14,9 +17,9 @@ ask() {
     local var="$1" label="$2" default="${3:-}" secret="${4:-}" value=""
     if [ -n "${!var:-}" ]; then return; fi
     if [ -n "$secret" ]; then
-        read -r -s -p "  $label: " value < /dev/tty; echo
+        read -r -s -p "  $label: " value < "$TTY"; echo
     else
-        read -r -p "  $label${default:+ [$default]}: " value < /dev/tty
+        read -r -p "  $label${default:+ [$default]}: " value < "$TTY"
     fi
     value="${value:-$default}"
     export "$var=$value"
@@ -35,7 +38,7 @@ fi
 say "neofire Core System wird geladen …"
 curl -fsSL "$ZIP_URL?install=$(date +%s)" -o .neofire-install.zip || fail "Paket konnte nicht geladen werden."
 unzip -q -o .neofire-install.zip || fail "Paket konnte nicht entpackt werden."
-rm -f .neofire-install.zip
+rm -f .neofire-install.zip /tmp/neofire-install.sh
 [ -f vendor/neofire/core/setup/cli.php ] || fail "Paket unvollständig."
 say "Version $(cat VERSION 2>/dev/null || echo '?') entpackt."
 
@@ -64,7 +67,7 @@ ask ADMIN_PASS "Passwort (mindestens 8 Zeichen)" "" secret
 if [ -z "${ACCEPT_TERMS:-}" ]; then
     say "Es gelten die AGB und die Datenschutzerklärung von neofire:"
     say "https://www.neofire.de/agb · https://www.neofire.de/datenschutz"
-    read -r -p "  Akzeptieren? (ja/nein): " ACCEPT_TERMS < /dev/tty
+    read -r -p "  Akzeptieren? (ja/nein): " ACCEPT_TERMS < "$TTY"
     export ACCEPT_TERMS
 fi
 

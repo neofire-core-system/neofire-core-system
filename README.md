@@ -20,7 +20,8 @@ Beim ersten Start wartet der Container auf die Datenbank und richtet den Shop au
 Im leeren Web-Verzeichnis per SSH:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/neofire-core-system/neofire-core-system/main/install.sh)
+curl -fsSL https://raw.githubusercontent.com/neofire-core-system/neofire-core-system/main/install.sh -o /tmp/neofire-install.sh
+bash /tmp/neofire-install.sh
 ```
 
 Das Skript lädt die aktuelle Version von neofire.de, fragt Datenbank, Shop- und Betreiberdaten ab und richtet den Shop ein.
