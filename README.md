@@ -15,6 +15,16 @@ docker compose up -d
 
 Beim ersten Start wartet der Container auf die Datenbank und richtet den Shop automatisch ein. Danach ist er unter `SHOP_URL` erreichbar, die Verwaltung unter `SHOP_URL/admin`.
 
+## Ohne Docker (Webserver mit PHP und MySQL)
+
+Im leeren Web-Verzeichnis per SSH:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/neofire-core-system/neofire-core-system/main/install.sh)
+```
+
+Das Skript lädt die aktuelle Version von neofire.de, fragt Datenbank, Shop- und Betreiberdaten ab und richtet den Shop ein.
+
 ## Umgebungsvariablen
 
 | Variable | Pflicht | Bedeutung |
