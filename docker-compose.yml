@@ -1,0 +1,48 @@
+services:
+  neofire:
+    image: ghcr.io/neofire-core-system/core:1
+    ports:
+      - "8080:80"
+    environment:
+      TZ: Europe/Berlin
+      DB_HOST: mariadb
+      DB_NAME: neofire
+      DB_USER: neofire
+      DB_PASS: ${DB_PASSWORD:?set DB_PASSWORD}
+      SHOP_URL: ${SHOP_URL:-http://localhost:8080}
+      SHOP_NAME: ${SHOP_NAME:-Mein Shop}
+      SHOP_EMAIL: ${SHOP_EMAIL:?set SHOP_EMAIL}
+      ADMIN_USER: ${ADMIN_USER:-admin}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASS: ${ADMIN_PASS:?set ADMIN_PASS}
+      COMPANY: ${COMPANY:?set COMPANY}
+      STREET: ${STREET:?set STREET}
+      POSTCODE: ${POSTCODE:?set POSTCODE}
+      CITY: ${CITY:?set CITY}
+      ACCEPT_TERMS: ${ACCEPT_TERMS:?set ACCEPT_TERMS=1 to accept licence, terms and privacy policy}
+    volumes:
+      - neofire_data:/var/www/html
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    restart: unless-stopped
+  mariadb:
+    image: mariadb:lts
+    environment:
+      TZ: Europe/Berlin
+      MARIADB_AUTO_UPGRADE: "1"
+      MARIADB_DATABASE: neofire
+      MARIADB_USER: neofire
+      MARIADB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      MARIADB_RANDOM_ROOT_PASSWORD: "1"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+volumes:
+  neofire_data:
+  mariadb_data:
