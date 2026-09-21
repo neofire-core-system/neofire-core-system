@@ -25,10 +25,14 @@ ask() {
     export "$var=$value"
 }
 
+# Manche Hoster laden Erweiterungen wie den ionCube Loader doppelt und PHP meldet das bei jedem Start.
+# Diese Meldung ist harmlos und wird hier ausgeblendet.
+quiet_php() { grep -v -i "ionCube PHP Loader" || true; }
+
 for tool in php curl unzip; do
     command -v "$tool" > /dev/null 2>&1 || fail "$tool ist nicht installiert."
 done
-php -r 'exit(version_compare(PHP_VERSION, "7.4.0", ">=") ? 0 : 1);' || fail "PHP 7.4 oder neuer wird benötigt."
+php -r 'exit(version_compare(PHP_VERSION, "7.4.0", ">=") ? 0 : 1);' > /dev/null 2>&1 || fail "PHP 7.4 oder neuer wird benötigt."
 
 cd "$TARGET"
 if [ -f index.php ] || [ -d vendor/neofire ]; then
@@ -72,7 +76,11 @@ if [ -z "${ACCEPT_TERMS:-}" ]; then
 fi
 
 say "Einrichtung läuft …"
-php vendor/neofire/core/setup/cli.php
+set +o pipefail
+php vendor/neofire/core/setup/cli.php 2>&1 | quiet_php
+status=${PIPESTATUS[0]}
+set -o pipefail
+[ "$status" -eq 0 ] || fail "Die Einrichtung ist nicht abgeschlossen (siehe Meldung oben)."
 
 say "Fertig. Letzter Schritt: In der Verwaltung unter System > Cronjobs steht die Cron-Adresse."
 say "Diese im Hosting-Panel jede Minute aufrufen lassen."
